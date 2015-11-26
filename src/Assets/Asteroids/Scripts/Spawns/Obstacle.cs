@@ -9,7 +9,7 @@ namespace Asteroids
 		{
 			if (collider.IsPlayerShot())
 			{
-				collider.gameObject.SetActive(false);
+				GlobalVariables.Player.SetShotToPool(collider.GetComponent<MovementController>());
 
 				DoExplosion();
 
@@ -17,8 +17,8 @@ namespace Asteroids
 			}
 		}
 
-		protected abstract void DoExplosion();
-
 		public abstract void DoImpact();
+		
+		protected abstract void DoExplosion();
 	}
 }

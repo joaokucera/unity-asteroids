@@ -9,7 +9,7 @@ namespace Asteroids
 		Cross = 2
 	}
 
-	[AddComponentMenu("ASTEROIDS / Player Weapon Controller")]
+	[AddComponentMenu("ASTEROIDS/Player Weapon Controller")]
 	public class PlayerWeaponController : Pooling<MovementController>
 	{
 		private const float DowngradeTimeLimit = 30f;
@@ -55,6 +55,8 @@ namespace Asteroids
 
 		public void Upgrade()
 		{
+			SoundManager.PlaySoundEffect ("PowerUpCollected");
+
 			var previousType = m_behaviour.Type;
 			
 			switch (previousType)
@@ -68,16 +70,6 @@ namespace Asteroids
 				default:
 					break;
 			}
-
-			TryUpdateWeapon (previousType);
-		}
-
-		public void ForceDowngrade()
-		{
-			if (m_behaviour.Type == WeaponType.Laser) return;
-
-			var previousType = m_behaviour.Type;
-			m_behaviour = WeaponFactory.GetCurrentWeapon(WeaponType.Laser);
 
 			TryUpdateWeapon (previousType);
 		}

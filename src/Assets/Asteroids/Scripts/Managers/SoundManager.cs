@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Sound Manager")]
+	[AddComponentMenu("ASTEROIDS/Sound Manager")]
 	public class SoundManager : Singleton<SoundManager>
 	{
 		private Dictionary<string, AudioClip> m_sfxDictionary;
@@ -13,7 +13,7 @@ namespace Asteroids
 		[SerializeField] private AudioSource m_musicSource;
 		[SerializeField] private AudioSource m_sfxSource;
 
-		[Header("Sound Effects")]
+		[Header("Sound Effects Collection")]
 		[SerializeField] private AudioClip[] sfxClips;
 
 		void Start()

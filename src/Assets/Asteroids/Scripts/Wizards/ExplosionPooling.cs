@@ -3,12 +3,14 @@ using System.Collections;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Explosion Pooling")]
+	[AddComponentMenu("ASTEROIDS/Explosion Pooling")]
 	public class ExplosionPooling : Pooling<ParticleSystem> 
 	{
 		public void DoExplosion (Vector2 position, Quaternion rotation, string explosionClipName)
 		{
+			// Explosion sound.
 			SoundManager.PlaySoundEffect (explosionClipName);
+			// Shake screen.
 			ScreenShake.Shake ();
 
 			var explosion = GetObjectFromPool ();
@@ -24,7 +26,7 @@ namespace Asteroids
 		{
 			yield return new WaitForSeconds(explosion.startLifetime);
 
-			explosion.gameObject.SetActive (false);
+			GlobalVariables.ExplosionPooling.SetObjectToPool (explosion);
 		}
 	}
 }

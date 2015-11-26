@@ -2,7 +2,7 @@
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Renderer Wrapping")]
+	[AddComponentMenu("ASTEROIDS/Renderer Wrapping")]
 	public class RendererWrapping : RendererBehaviour 
 	{
 		private Camera m_mainCamera;

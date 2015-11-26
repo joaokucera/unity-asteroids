@@ -3,15 +3,15 @@ using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Screen Shake")]
+	[AddComponentMenu("ASTEROIDS/Screen Shake")]
     public class ScreenShake : Singleton<ScreenShake>
     {
 		private Camera m_mainCamera;
 
 		[Header("Shake Settings")]
-		[Range(0, 1)] [SerializeField] private float m_shakeDecay = 0.0025f;
-		[Range(0, 1)] [SerializeField] private float m_shakeCoefIntensity = 0.025f;
-		[Range(0, 1)] [SerializeField] private float m_multiplier = 0.25f;
+		[Range(0f, 1f)] [SerializeField] private float m_shakeDecay = 0.005f;
+		[Range(0f, 1f)] [SerializeField] private float m_shakeCoefIntensity = 0.05f;
+		[Range(0f, 1f)] [SerializeField] private float m_multiplier = 0.5f;
 		
 		void Start()
 		{

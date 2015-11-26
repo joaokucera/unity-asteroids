@@ -3,11 +3,11 @@ using System.Collections;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / PowerUp Pooling")]
+	[AddComponentMenu("ASTEROIDS/PowerUp Pooling")]
 	public class PowerUpPooling : Pooling<Transform> 
 	{
 		[Header("Power Up Settings")]
-		[Range(0, 30)] [SerializeField] private float m_waitTime;
+		[Range(0f, 30f)] [SerializeField] private float m_waitTime;
 
 		public void DoPowerUp (Vector2 position, Quaternion rotation)
 		{
@@ -23,7 +23,7 @@ namespace Asteroids
 		{
 			yield return new WaitForSeconds(m_waitTime);
 
-			powerUp.gameObject.SetActive (false);
+			GlobalVariables.PowerUpPooling.SetObjectToPool (powerUp);
 		}
 	}
 }

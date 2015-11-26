@@ -8,17 +8,17 @@ namespace Asteroids
 
 		public float GetRotationValue ()
 		{
-			return Input.GetAxis ("Horizontal");
+			return Input.GetAxis("Horizontal");
 		}
 
 		public bool IsForward ()
 		{
-			return Input.GetAxis ("Vertical") > 0;
+			return Input.GetAxis("Vertical") > 0;
 		}
 
 		public bool IsShot ()
 		{
-			return Input.GetButtonDown ("Fire1");
+			return Input.GetButtonDown("Fire1");
 		}
 
 		#endregion

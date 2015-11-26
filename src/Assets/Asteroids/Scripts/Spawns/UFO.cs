@@ -2,35 +2,40 @@
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / UFO")]
+	[AddComponentMenu("ASTEROIDS/UFO")]
 	public class UFO : Obstacle 
 	{
+		private const int ImpactPoints = 10;
+
 		private Vector3 m_moveDirection;
-		
-		void Start()
-		{
-			m_moveDirection = Random.insideUnitCircle.normalized;
-		}
+		private float m_movementSpeed = 1.5f;
 
 		void Update ()
 		{
-			transform.position += m_moveDirection * 1.5f * Time.deltaTime;
+			transform.position += m_moveDirection * m_movementSpeed * Time.deltaTime;
+		}
+
+		public void Setup (Vector2 position)
+		{
+			transform.position = position;
+
+			m_moveDirection = Random.insideUnitCircle.normalized;
 		}
 
 		#region implemented abstract members of Obstacle
-
-		protected override void DoExplosion ()
-		{
-			GlobalVariables.ExplosionPooling.DoExplosion(transform.position, transform.rotation, "EnemyDeath");
-		}
 
 		public override void DoImpact ()
 		{
 			GlobalVariables.PowerUpPooling.DoPowerUp (transform.position, transform.rotation);
 
-			UIGame.UpdateScore (10);
+			UIGame.UpdateScore (ImpactPoints);
 
-			gameObject.SetActive (false);
+			GameManager.SetUFOToPool (this);
+		}
+		
+		protected override void DoExplosion ()
+		{
+			GlobalVariables.ExplosionPooling.DoExplosion(transform.position, transform.rotation, "UFODeath");
 		}
 
 		#endregion

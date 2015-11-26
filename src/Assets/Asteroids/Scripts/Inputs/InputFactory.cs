@@ -7,7 +7,7 @@ namespace Asteroids
 		public static IInputController GetCurrentInputController()
 		{
 			#if UNITY_ANDROID
-			return new TouchInputController();
+			return new InputTouchController();
 			#else
 			return new InputKeyboardController();
 			#endif

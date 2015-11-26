@@ -23,6 +23,14 @@ namespace Asteroids
             GeneratePool();
         }
 
+		public void SetObjectToPool(T oldObject)
+		{
+			oldObject.gameObject.SetActive(false);
+
+			oldObject.transform.localPosition = Vector2.zero;
+			oldObject.transform.localRotation = Quaternion.identity;
+		}
+
 		protected T GetObjectFromPool(bool active = true)
         {
             for (int i = 0; i < m_pool.Count; i++)

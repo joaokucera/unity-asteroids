@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+using System;
+using System.Collections;
+using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Player Motor")]
+	[AddComponentMenu("ASTEROIDS/Player Motor")]
 	[RequireComponent(typeof(MovementController))]
 	public class PlayerMotor : MonoBehaviour
 	{
@@ -11,10 +13,10 @@ namespace Asteroids
 		private PlayerWeaponController m_weaponController;
 		private ParticleSystem m_thrustEffect;
 		private float m_rotationValue;
-		private bool m_readyToPlay = true;
+		private bool m_isBlinking;
 
 		public PlayerData Data;
-
+			
 		void Awake()
 		{
 			Data = new PlayerData ();
@@ -34,8 +36,6 @@ namespace Asteroids
 
 		void Update()
 		{
-			if (!m_readyToPlay) return;
-
 			m_rotationValue = m_inputController.GetRotationValue ();
 
 			// Shoot.
@@ -47,8 +47,6 @@ namespace Asteroids
 
 		void FixedUpdate()
 		{
-			if (!m_readyToPlay) return;
-
 			// Rotation.
 			m_movement.DoRotation (-m_rotationValue);
 
@@ -69,11 +67,11 @@ namespace Asteroids
 
 		void OnTriggerEnter2D(Collider2D collider)
 		{
-			if (!m_readyToPlay) return;
+			if (m_isBlinking) return;
 
 			if (collider.IsEnemyShot ()) 
 			{
-				collider.gameObject.SetActive(false);
+				GlobalVariables.EnemyWeaponPooling.SetObjectToPool(collider.GetComponent<MovementController>());
 
 				OnHit();
 			}
@@ -85,28 +83,50 @@ namespace Asteroids
 			}
 			else if (collider.IsPowerUp())
 			{
-				collider.gameObject.SetActive(false);
+				GlobalVariables.PowerUpPooling.SetObjectToPool(collider.transform);
 				
 				m_weaponController.Upgrade();
 			}
 		}
 
+		public void SetShotToPool (MovementController shot)
+		{
+			m_weaponController.SetObjectToPool (shot);
+		}
+
 		private void OnHit()
 		{
+			m_isBlinking = true;
+
 			GlobalVariables.ExplosionPooling.DoExplosion(transform.position, transform.rotation, "PlayerDeath");
 
-			m_movement.Stop(CheckLife);
-			m_readyToPlay = false;
+			m_movement.Rigidbody.velocity = Vector2.zero;
+			m_movement.Rigidbody.angularVelocity = 0f;
 			
-			m_weaponController.ForceDowngrade();
+			StartCoroutine(Blink());
+		}
+
+		private IEnumerator Blink()
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				m_movement.RendererBehaviour.SpriteRenderer.enabled = !m_movement.RendererBehaviour.SpriteRenderer.enabled;
+				
+				yield return new WaitForSeconds (.25f);
+			}
+			
+			m_movement.RendererBehaviour.SpriteRenderer.enabled = false;
+			
+			CheckLife ();
 		}
 
 		private void CheckLife()
 		{
 			if (UIGame.TryUpdateLife ())
 			{
-				m_movement.RendererBehaviour.Show();
-				m_readyToPlay = true;
+				m_movement.RendererBehaviour.SpriteRenderer.enabled = true;
+
+				m_isBlinking = false;
 			}
 			else
 			{

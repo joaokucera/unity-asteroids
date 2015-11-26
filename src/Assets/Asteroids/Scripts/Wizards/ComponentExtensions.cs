@@ -4,18 +4,6 @@ namespace Asteroids
 {
     public static class ComponentExtensions
     {
-        public static T GetOrAddComponent<T>(this Component component) where T : Component
-        {
-            T result = component.GetComponent<T>();
-
-            if (result == null)
-            {
-                result = component.gameObject.AddComponent<T>();
-            }
-
-            return result;
-        }
-
 		public static bool IsPlayerShot(this Collider2D collider)
 		{
 			return collider.CompareTag ("Player Shot");

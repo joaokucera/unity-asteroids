@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections;
-using UnityEngine;
-using Random = UnityEngine.Random;
+﻿using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Movement Controller")]
+	[AddComponentMenu("ASTEROIDS/Movement Controller")]
 	[RequireComponent(typeof(Rigidbody2D))]
 	[RequireComponent(typeof(RendererBehaviour))]
 	public class MovementController : MonoBehaviour
 	{
 		[Header("Movement Settings")]
-		[Range(0, 500)] public float RotationSpeed;
-		[Range(0, 500)] public float ThrustForce;
+		[Range(1f, 250f)] public float RotationSpeed;
+		[Range(1f, 250f)] public float ThrustForce;
 
 		private Rigidbody2D m_rigidbody;
 		public Rigidbody2D Rigidbody
@@ -36,14 +33,14 @@ namespace Asteroids
 			}
 		}
 
-		public void DoRotation(float direction)
+		public void DoRotation(float baseVelocity)
 		{
-			Rigidbody.angularVelocity = direction * RotationSpeed;
+			Rigidbody.angularVelocity = baseVelocity * RotationSpeed;
 		}
 		
-		public void DoTorque(float direction)
+		public void DoTorque(float torque)
 		{
-			Rigidbody.AddTorque (direction * RotationSpeed);
+			Rigidbody.AddTorque (torque * RotationSpeed);
 		}
 
 		public void DoForce(Vector2 direction)
@@ -51,16 +48,9 @@ namespace Asteroids
 			Rigidbody.AddForce (direction * ThrustForce);
 		}
 
-		public void DOVelocity(Vector2 parentVelocity)
+		public void DOVelocity(Vector2 baseVelocity, float multiplier)
 		{
-			Rigidbody.velocity = parentVelocity + Random.insideUnitCircle * 2;
-		}
-
-		public void Stop(Action callback)
-		{
-			Rigidbody.velocity = Vector2.zero;
-
-			StartCoroutine(RendererBehaviour.Blink(callback));
+			Rigidbody.velocity = baseVelocity + Random.insideUnitCircle * multiplier;
 		}
 	}
 }

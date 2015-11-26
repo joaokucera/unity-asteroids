@@ -1,25 +1,26 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Game Manager")]
+	[AddComponentMenu("ASTEROIDS/Game Manager")]
 	[RequireComponent(typeof(AsteroidsSpawner))]
 	[RequireComponent(typeof(EnemiesSpawner))]
 	[RequireComponent(typeof(UFOSpawner))]
 	public class GameManager : Singleton<GameManager>
 	{
+		private const float MinWaitTime = 5f;
+
 		private AsteroidsSpawner m_asteroidsSpawner;
 		private EnemiesSpawner m_enemiesSpawner;
 		private UFOSpawner m_ufoSpawner;
 
-		[Header("Spawn Settings")]
-		[Range(1, 10)] [SerializeField] private float m_spawnRadius;
-		[Range(1, 10)] [SerializeField] private int m_minimumAsteroids;
-		[Range(0, 1)] [SerializeField] private float m_additionalAsteroidsPerLevel;
-		[Range(1, 5)] [SerializeField] private int m_asteroidPieces;
-		[Range(5, 30)] [SerializeField] private float m_waitTimeToSpawnEnemy;
-		[Range(5, 30)] [SerializeField] private float m_waitTimeToSpawnUFO;
+		[Range(0f, 2.5f)] [SerializeField] private float m_waitTimeToInitializeALevel;
+
+		[Header("General Spawn Settings")]
+		[Range(1f, 10f)] [SerializeField] private float m_spawnRadius;
+		[Range(MinWaitTime, 30f)] [SerializeField] private float m_waitTimeToSpawnEnemy;
+		[Range(MinWaitTime, 30f)] [SerializeField] private float m_waitTimeToSpawnUFO;
 
 		void Start()
 		{
@@ -30,57 +31,55 @@ namespace Asteroids
 			StartCoroutine(Initialize ());
 		}
 
-		void Update()
+		public static void SetEnemyToPool(Enemy enemy)
 		{
-			if (m_asteroidsSpawner.AreAllDestroyed ())
+			Instance.m_enemiesSpawner.SetObjectToPool (enemy);
+		}
+
+		public static void SetUFOToPool(UFO ufo)
+		{
+			Instance.m_ufoSpawner.SetObjectToPool (ufo);
+		}
+
+		public static void CheckAsteroids(Asteroid origin, AsteroidSize size)
+		{
+			Instance.m_asteroidsSpawner.TrySpawnInPieces (origin, size);
+
+			if (Instance.m_asteroidsSpawner.CheckAllDestroyed())
 			{
-				NextLevel();
+				Instance.NextLevel();
 			}
 		}
-
-		void OnDrawGizmos()
-		{
-			Gizmos.color = Color.yellow;
-			Gizmos.DrawWireSphere (transform.position, m_spawnRadius);
-		}
-
-		public static void SpawnAfterExplosion(Asteroid origin, AsteroidSize size)
-		{
-			Instance.m_asteroidsSpawner.SpawnPieces (origin, size, Instance.m_asteroidPieces);
-		}
-
+		
 		public static void OnGameOver()
 		{
 			Instance.CancelInvoke ();
 
-			SoundManager.PlaySoundEffect ("GameOver");
-
 			UIGame.ShowGameOver();
-		}
-
-		private void NextLevel ()
-		{
-			CancelInvoke ();
-
-			GlobalVariables.Player.Data.Level++;
-			UIGame.UpdateLevel ();
-
-			m_waitTimeToSpawnEnemy--;
-			m_waitTimeToSpawnEnemy = Mathf.Max (m_waitTimeToSpawnEnemy, 5);
-			m_waitTimeToSpawnUFO--;
-			m_waitTimeToSpawnUFO = Mathf.Max (m_waitTimeToSpawnUFO, 5);
-
-			StartCoroutine(Initialize ());
 		}
 
 		private IEnumerator Initialize()
 		{
-			yield return new WaitForSeconds (2.5f);
+			yield return new WaitForSeconds (m_waitTimeToInitializeALevel);
 
-			StartCoroutine(m_asteroidsSpawner.SpawnCollection (GlobalVariables.Player.Data.Level, m_additionalAsteroidsPerLevel, m_minimumAsteroids, m_spawnRadius));
+			StartCoroutine(m_asteroidsSpawner.SpawnCollection (GlobalVariables.Player.Data.Level, m_spawnRadius));
 
 			Invoke ("SpawnEnemy", m_waitTimeToSpawnEnemy);
 			Invoke ("SpawnUFO", m_waitTimeToSpawnUFO);
+		}
+
+		private void NextLevel()
+		{
+			CancelInvoke ();
+			
+			GlobalVariables.Player.Data.NextLevel ();
+			
+			m_waitTimeToSpawnEnemy--;
+			m_waitTimeToSpawnEnemy = Mathf.Max (m_waitTimeToSpawnEnemy, MinWaitTime);
+			m_waitTimeToSpawnUFO--;
+			m_waitTimeToSpawnUFO = Mathf.Max (m_waitTimeToSpawnUFO, MinWaitTime);
+			
+			StartCoroutine(Initialize ());
 		}
 
 		private void SpawnEnemy()

@@ -5,21 +5,31 @@ using UnityEngine.UI;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / UI Game")]
+	[AddComponentMenu("ASTEROIDS/UI Game")]
 	public class UIGame : Singleton<UIGame> 
 	{
-		[Header("In Game UI Componenets")]
-		[SerializeField] private RectTransform m_panelInGame;
+		[Header("In Game UI Components")]
+		[SerializeField] private GameObject m_panelInGame;
 		[SerializeField] private Image[] m_lifeImages;
 		[SerializeField] private Image[] m_powerUpImages;
 		[SerializeField] private Text m_currentScoreText;
 		[SerializeField] private Text m_previousHighScoreText;
 		[SerializeField] private Text m_levelText;
 
-		[Header("Game Over UI Componenets")]
-		[SerializeField] private RectTransform m_panelGameOver;
+		[Header("Game Over UI Components")]
+		[SerializeField] private GameObject m_panelGameOver;
 		[SerializeField] private Text m_finalScoreText;
 		[SerializeField] private Text m_newHighScoreText;
+
+		[Header("Touch Controls UI Components")]
+		[SerializeField] private GameObject m_panelTouchControls;
+		[SerializeField] private InputTouchPointer m_buttonLeft;
+		[SerializeField] private InputTouchPointer m_buttonRight;
+		[SerializeField] private InputTouchPointer m_buttonFoward;
+
+		public static bool IsClickButtonLeft { get { return Instance.m_buttonLeft.IsClicked; } }
+		public static bool IsClickButtonRight { get { return Instance.m_buttonRight.IsClicked; } }
+		public static bool IsClickButtonFoward { get { return Instance.m_buttonFoward.IsClicked; } }
 
 		void Start()
 		{
@@ -28,6 +38,14 @@ namespace Asteroids
 			UpdateLevelText ();
 
 			UpdateHighScoreText ();
+		}
+
+		void Update()
+		{
+			if (Input.GetKeyDown (KeyCode.Escape)) 
+			{
+				Menu();
+			}
 		}
 
 		public void Retry()
@@ -44,8 +62,15 @@ namespace Asteroids
 			Application.LoadLevel ("MenuScene");
 		}
 
+		public static void ShowTouchControls ()
+		{
+			Instance.m_panelTouchControls.SetActive (true);
+		}
+
 		public static void ShowGameOver()
 		{
+			SoundManager.PlaySoundEffect ("GameOver");
+
 			Instance.DoGameOver ();
 		}
 
@@ -71,8 +96,7 @@ namespace Asteroids
 
 		private bool UpdateLifeImages()
 		{
-			var playerData = GlobalVariables.Player.Data;
-			playerData.Lifes--;
+			GlobalVariables.Player.Data.LoseLife();
 
 			var lifeImage = m_lifeImages.LastOrDefault(l => l.enabled);
 			if (lifeImage != null)
@@ -101,7 +125,8 @@ namespace Asteroids
 		private IEnumerator UpdateScoreText(int newScore)
 		{
 			var previousScore = GlobalVariables.Player.Data.CurrentScore;
-			GlobalVariables.Player.Data.CurrentScore += newScore;
+
+			GlobalVariables.Player.Data.AddScore(newScore);
 
 			while (previousScore < GlobalVariables.Player.Data.CurrentScore)
 			{
@@ -129,8 +154,8 @@ namespace Asteroids
 		{
 			GlobalVariables.Player.Data.CheckHighScore ();
 			
-			m_panelInGame.localScale = Vector3.zero;
-			m_panelGameOver.localScale = Vector3.one;
+			m_panelInGame.SetActive (false);
+			m_panelGameOver.SetActive (true);
 			
 			m_finalScoreText.text = string.Format("FINAL SCORE: <color=#FFC000FF>{0}</color>", GlobalVariables.Player.Data.CurrentScore);
 			m_newHighScoreText.text = string.Format("HIGH SSCORE: <color=#FFC000FF>{0}</color>", GlobalVariables.Player.Data.HighScore);

@@ -5,29 +5,28 @@ using UnityEngine;
 
 namespace Asteroids
 {
-	[AddComponentMenu("ASTEROIDS / Asteroids Spawner")]
+	[AddComponentMenu("ASTEROIDS/Asteroids Spawner")]
 	public class AsteroidsSpawner : Pooling<Asteroid> 
 	{
 		private List<Asteroid> m_asteroidsCollection = new List<Asteroid> ();
-		private bool m_isReadyToPlay;
+
+		[Header("Asteroids Spawn Settings")]
+		[Range(1, 10)] [SerializeField] private int m_minimumAsteroids;
+		[Range(0.1f, 2f)] [SerializeField] private float m_additionalAsteroidsPerLevel;
+		[Range(1, 5)] [SerializeField] private int m_asteroidPieces;
 
 		[Header("Asteroids Sprites")]
 		[SerializeField] private Sprite[] m_sprites;
 
-		void OnGUI()
+		public IEnumerator SpawnCollection (int level, float radius)
 		{
-			GUI.Label(new Rect(20, Screen.height - 40, 200, 100), "ASTEROIDS: " + m_asteroidsCollection.Count);
-		}
-
-		public IEnumerator SpawnCollection (int level, float additionalPerLevel, int minimum, float radius)
-		{
-			var length = Mathf.RoundToInt(level * additionalPerLevel) + minimum;
+			var length = Mathf.RoundToInt(level * m_additionalAsteroidsPerLevel) + m_minimumAsteroids;
 
 			for(int i = 0; i < length; i++)
 			{
 				Vector2 spawnPosition = Random.insideUnitCircle * radius;
 
-				while(Physics.CheckSphere(spawnPosition, 1))
+				while(Physics.CheckSphere(spawnPosition, 2f))
 				{
 					spawnPosition = Random.insideUnitCircle * radius;
 
@@ -35,26 +34,26 @@ namespace Asteroids
 				}
 
 				var asteroid = GetObjectFromPool();
+
 				asteroid.Setup(spawnPosition, AsteroidSize.Large, m_sprites[Random.Range (0, m_sprites.Length)]);
-				asteroid.SetMovement();
+				asteroid.SetMovementWithRandomForce();
 
 				m_asteroidsCollection.Add(asteroid);
 			}
-
-			m_isReadyToPlay = true;
 		}
 		
-		public void SpawnPieces (Asteroid origin, AsteroidSize size, int pieces)
+		public void TrySpawnInPieces (Asteroid origin, AsteroidSize size)
 		{
 			if (size != AsteroidSize.Null)
 			{
 				var position = (Vector2)origin.transform.position;
 
-				for(int i = 0; i < pieces; i++)
+				for(int i = 0; i < m_asteroidPieces; i++)
 				{
 					var asteroid = GetObjectFromPool();
+
 					asteroid.Setup(position + new Vector2(i * 1f, 0), size, m_sprites[Random.Range (0, m_sprites.Length)]);
-					asteroid.SetMovement(origin.MovementController.Rigidbody.velocity);
+					asteroid.SetMovementWithVelocity(origin.MovementController.Rigidbody.velocity, 2f);
 					
 					m_asteroidsCollection.Add(asteroid);
 				}
@@ -62,21 +61,14 @@ namespace Asteroids
 
 			m_asteroidsCollection.Remove (origin);
 
-			origin.gameObject.SetActive (false);
+			SetObjectToPool (origin);
 		}
 
-		public bool AreAllDestroyed ()
+		public bool CheckAllDestroyed ()
 		{
-			if (!m_isReadyToPlay) return false;
-
 			var allDestroyed = m_asteroidsCollection.Count == 0 || m_asteroidsCollection.Count(a => a.gameObject.activeInHierarchy) == 0;
 
-			if (allDestroyed) 
-			{
-				m_asteroidsCollection.Clear();
-
-				m_isReadyToPlay = false;
-			}
+			if (allDestroyed) m_asteroidsCollection.Clear();
 
 			return allDestroyed;
 		}
